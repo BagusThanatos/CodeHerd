@@ -22,6 +22,7 @@ public class Client {
     MulticastSocket in;
     DatagramSocket out;
     ArrayList<String> serverIPs;
+    
     public Client() throws IOException{
         this.in= new MulticastSocket(4446);
         this.out= new DatagramSocket(4445);
