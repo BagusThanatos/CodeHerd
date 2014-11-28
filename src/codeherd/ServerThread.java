@@ -32,8 +32,8 @@ public class ServerThread {
             while (true){
                 try {
                     socket.receive(p);
-                    String s=socket.getInetAddress()+","+socket.getPort();
-                    socket.send(new DatagramPacket(s.getBytes(),s.getBytes().length));
+                    String s=socket.getInetAddress()+"";
+                    socket.send(new DatagramPacket(s.getBytes(),s.getBytes().length,p.getAddress(), p.getPort()));
                 } catch (IOException ex) {
                     Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
                 }
