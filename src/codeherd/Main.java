@@ -81,6 +81,9 @@ public class Main extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         menuFileExit = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
+        menuHost = new javax.swing.JMenuItem();
+        menuRemote = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -146,6 +149,16 @@ public class Main extends javax.swing.JFrame {
 
         jMenu2.setText("Edit");
         jMenuBar1.add(jMenu2);
+
+        jMenu3.setText("Remote");
+
+        menuHost.setText("Host");
+        jMenu3.add(menuHost);
+
+        menuRemote.setText("Remote");
+        jMenu3.add(menuRemote);
+
+        jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
 
@@ -303,6 +316,7 @@ public class Main extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
@@ -315,6 +329,8 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuFilePrint;
     private javax.swing.JMenuItem menuFileSave;
     private javax.swing.JMenuItem menuFileSaveAs;
+    private javax.swing.JMenuItem menuHost;
+    private javax.swing.JMenuItem menuRemote;
     private javax.swing.JTextArea text;
     // End of variables declaration//GEN-END:variables
 }
