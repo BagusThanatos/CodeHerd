@@ -38,7 +38,7 @@ public class Server {
         lC.start();
     }
     public void stopListening(){
-        lC.stop();
+        lC.interrupt();
         socket.close();
     }
     protected class ListenClass extends Thread{
@@ -48,7 +48,7 @@ public class Server {
                 DatagramPacket p = new DatagramPacket(new byte[256], 256);
                 
                 System.out.println("Server ip:"+ socket.getInetAddress());
-                while (true){
+                while (!Thread.interrupted()){
                     System.out.println("Server receiving");
                     socket.receive(p);
                     String s=socket.getInetAddress()+"";
