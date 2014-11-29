@@ -8,9 +8,13 @@ package codeherd;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,17 +25,36 @@ import java.util.logging.Logger;
 public class Client {
     MulticastSocket in;
     DatagramSocket out;
-    ArrayList<String> serverIPs;
-    
-    public Client() throws IOException{
-        this.in= new MulticastSocket(4446);
-        this.out= new DatagramSocket(4445);
-        out.setBroadcast(true);
-        serverIPs= new ArrayList();
+    ArrayList<InetAddress> serverIPs;
+    Enumeration<NetworkInterface> netInterfaces;
+    ArrayList<InetAddress> broadcasts;
+    public Client(){
+        try {
+            netInterfaces= NetworkInterface.getNetworkInterfaces();
+            broadcasts= new ArrayList<>();
+            while (netInterfaces.hasMoreElements()){
+                NetworkInterface n = netInterfaces.nextElement();
+                if (n.isLoopback() || !n.isUp()) continue;
+                for (InterfaceAddress iA : n.getInterfaceAddresses()){
+                    InetAddress b = iA.getBroadcast();
+                    if (b==null) continue;
+                    broadcasts.add(b);
+                }
+            }
+            
+            this.in= new MulticastSocket(4446);
+            this.out= new DatagramSocket(4447);
+            out.setBroadcast(true);
+            serverIPs= new ArrayList();
+        } catch (Exception ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    public ArrayList<String> getServers(){
+    public void getServers(){
         serverIPs.clear();
-        
+        new GetServers(new Timer()).start();    
+    }
+    public ArrayList<InetAddress> getServerList(){
         return serverIPs;
     }
     public class GetServers extends Thread{
@@ -40,21 +63,26 @@ public class Client {
         public GetServers(Timer t){
             super();
             this.t=t;
-            t.setGetServers(this);
+            t.setThread(this);
         }
         @Override
         public void run(){
             t.start();
-            DatagramPacket p = new DatagramPacket(new byte[256], 256);
+            DatagramPacket p;
             try {
-                out.send(p);
+                for (InetAddress i : broadcasts) {
+                    p= new DatagramPacket(new byte[256], 256,i , 8001); System.out.println("sending to "+i);
+                    out.send(p);
+                }
+                
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
+            p= new DatagramPacket(new byte[256], 256);
             while(true){
                 try {
-                    in.receive(p);
-                    serverIPs.add(new String(p.getData(),0,p.getLength()));
+                    in.receive(p); System.out.println("receiving reply from servers");
+                    serverIPs.add(p.getAddress());
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -62,30 +90,30 @@ public class Client {
         }
     }
     public class Timer extends Thread{
-        GetServers g;
-        public void setGetServers(GetServers g){
+        Thread g;
+        public void setThread(Thread g){
             this.g=g;
         }
         @Override
         public void run(){
             int i=0;
             while (i<=4){
-                try {
+                try { System.out.println(getServerList());
                     sleep(1000);
                     i++;
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 } 
             }
-        g.interrupt();
+            g.stop();
+            out.close();
+            in.close();
+            
         }
     }
-    public static void main(){
-        try {
-            Client C= new Client();
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public static void main(String[] args){
+        Client C= new Client();
+        C.getServers();
         
     }
 }
