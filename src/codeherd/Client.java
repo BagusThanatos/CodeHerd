@@ -23,7 +23,6 @@ import java.util.logging.Logger;
  * @author BagusThanatos
  */
 public class Client {
-    MulticastSocket in;
     DatagramSocket out;
     ArrayList<InetAddress> serverIPs;
     Enumeration<NetworkInterface> netInterfaces;
@@ -42,7 +41,6 @@ public class Client {
                 }
             }
             
-            this.in= new MulticastSocket(4446);
             this.out= new DatagramSocket(4447);
             out.setBroadcast(true);
             serverIPs= new ArrayList();
@@ -71,6 +69,7 @@ public class Client {
             DatagramPacket p;
             try {
                 for (InetAddress i : broadcasts) {
+                    if (i.equals(InetAddress.getByName("0.0.0.0"))) continue;
                     p= new DatagramPacket(new byte[256], 256,i , 8001); System.out.println("sending to "+i);
                     out.send(p);
                 }
@@ -80,11 +79,12 @@ public class Client {
             }
             p= new DatagramPacket(new byte[256], 256);
             while(true){
-                try {
-                    in.receive(p); System.out.println("receiving reply from servers");
+                try { System.out.println("waiting for replies..");
+                    out.receive(p); System.out.println("receiving reply from servers");
                     serverIPs.add(p.getAddress());
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("this");
                 }
             }
         }
@@ -96,8 +96,8 @@ public class Client {
         }
         @Override
         public void run(){
-            int i=0;
-            while (i<=4){
+            int i=1;
+            while (i<=10){
                 try { System.out.println(getServerList());
                     sleep(1000);
                     i++;
@@ -107,7 +107,6 @@ public class Client {
             }
             g.stop();
             out.close();
-            in.close();
             
         }
     }
