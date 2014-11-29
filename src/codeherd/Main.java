@@ -86,6 +86,7 @@ public class Main extends javax.swing.JFrame {
         menuRemote = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("CodeHerd");
 
         text.setColumns(20);
         text.setRows(5);
