@@ -5,6 +5,16 @@
  */
 package codeherd;
 
+import java.awt.event.WindowEvent;
+import static java.lang.Thread.sleep;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author ASUS
@@ -14,10 +24,19 @@ public class ConnToServer extends javax.swing.JFrame {
     /**
      * Creates new form NewJFrame
      */
+    Client c=null;
+    Main m;
+    ArrayList<InetAddress> ip;
     public ConnToServer() {
         initComponents();
     }
-
+    public ConnToServer(Main m,Client c){
+        this();
+        this.m=m;
+        if (c!=null) this.c=c;
+        else this.c = new Client();
+        buttonConnect.setEnabled(false);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -35,6 +54,11 @@ public class ConnToServer extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Server List");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         tableServerList.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -64,6 +88,11 @@ public class ConnToServer extends javax.swing.JFrame {
         tableServerList.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
         buttonRefresh.setText("Refresh");
+        buttonRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRefreshActionPerformed(evt);
+            }
+        });
 
         buttonCancel.setText("Cancel");
         buttonCancel.addActionListener(new java.awt.event.ActionListener() {
@@ -73,19 +102,24 @@ public class ConnToServer extends javax.swing.JFrame {
         });
 
         buttonConnect.setText("Connect");
+        buttonConnect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonConnectActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(15, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(buttonRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(69, 69, 69)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(buttonConnect))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31))
@@ -95,20 +129,65 @@ public class ConnToServer extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonRefresh)
+                    .addComponent(buttonConnect)
                     .addComponent(buttonCancel)
-                    .addComponent(buttonConnect))
-                .addContainerGap(48, Short.MAX_VALUE))
+                    .addComponent(buttonRefresh))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
-        // TODO add your handling code here:
+        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        m.setClient(null);
     }//GEN-LAST:event_buttonCancelActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        
+    }//GEN-LAST:event_formWindowClosed
+
+    private void buttonRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRefreshActionPerformed
+
+        c.getServers();
+        Thread t = new Thread (()->{
+            try {
+                buttonRefresh.setEnabled(false);
+                buttonConnect.setEnabled(false);
+                for (int i=1;i<=9;i++) sleep(1000);
+                ip = c.getServerIPs();
+                ArrayList<String> name = c.getServerNames();
+                buttonRefresh.setEnabled(true);
+                System.out.println(ip);
+                DefaultTableModel  d = (DefaultTableModel) tableServerList.getModel();
+                while (d.getRowCount()>0) d.removeRow(0);
+                for (int i=0;i<ip.size();i++){
+                    d.addRow(new Object[]{ip.get(i).toString(),name.get(i)});
+                }
+                buttonConnect.setEnabled(true);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ConnToServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        });
+        t.start();
+        
+    }//GEN-LAST:event_buttonRefreshActionPerformed
+
+    private void buttonConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConnectActionPerformed
+        if (tableServerList.getSelectedRowCount() <1 || tableServerList.getSelectedRowCount() > 1){
+            JOptionPane.showMessageDialog(this, "Pilih salah satu saja!");
+        }
+        else {
+            DefaultTableModel d = (DefaultTableModel) tableServerList.getModel();
+            System.out.println(tableServerList.getValueAt(tableServerList.getSelectedRow(),0));
+            c.setServerIP(ip.get(tableServerList.getSelectedRow()));
+            m.setClient(c);
+            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        }
+    }//GEN-LAST:event_buttonConnectActionPerformed
 
     /**
      * @param args the command line arguments

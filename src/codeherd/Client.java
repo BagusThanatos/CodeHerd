@@ -17,16 +17,23 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextArea;
 
 /**
  *
  * @author BagusThanatos
  */
 public class Client {
+    public static int clientPort= 4447;
+    public static int clientPort2=4448;
+    InetAddress serverIP= null;
     DatagramSocket out;
+    DatagramSocket in;
     ArrayList<InetAddress> serverIPs;
+    ArrayList<String> serverNames;
     Enumeration<NetworkInterface> netInterfaces;
     ArrayList<InetAddress> broadcasts;
+    ListenToServer l;
     public Client(){
         try {
             netInterfaces= NetworkInterface.getNetworkInterfaces();
@@ -41,9 +48,11 @@ public class Client {
                 }
             }
             
-            this.out= new DatagramSocket(4447);
+            this.out= new DatagramSocket(clientPort);
+            this.in= new DatagramSocket(clientPort2);
             out.setBroadcast(true);
             serverIPs= new ArrayList();
+            serverNames= new ArrayList<>();
         } catch (Exception ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -52,8 +61,37 @@ public class Client {
         serverIPs.clear();
         new GetServers(new Timer()).start();    
     }
-    public ArrayList<InetAddress> getServerList(){
+    public ArrayList<InetAddress> getServerIPs(){
         return serverIPs;
+    }
+    public ArrayList<String> getServerNames(){
+        return this.serverNames;
+    }
+    public void setServerIP(InetAddress i){
+        this.serverIP=i;
+    }
+    public void connect(JTextArea j){
+        if (serverIP != null) {
+            try {
+                String s = "CONNECT";
+                out.send(new DatagramPacket(s.getBytes(), s.getBytes().length, serverIP, Server.serverPort));
+                ListenToServer l = new ListenToServer(j);
+                l.start();
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    public void disconnect(){
+        if (serverIP != null) {
+            try {
+                String s = "DISCONNECT";
+                out.send(new DatagramPacket(s.getBytes(), s.getBytes().length, serverIP, Server.serverPort));
+                if (!l.isInterrupted() && l.isAlive()) l.interrupt();
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     public class GetServers extends Thread{
         Timer t;
@@ -70,18 +108,19 @@ public class Client {
             try {
                 for (InetAddress i : broadcasts) {
                     if (i.equals(InetAddress.getByName("0.0.0.0"))) continue;
-                    p= new DatagramPacket(new byte[256], 256,i , 8001); System.out.println("sending to "+i);
+                    p= new DatagramPacket(new byte[256], 256,i , Server.serverPort); System.out.println("sending to "+i);
                     out.send(p);
                 }
                 
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
-            p= new DatagramPacket(new byte[256], 256);
+            p= new DatagramPacket(new byte[1500], 1500);
             while(true){
                 try { System.out.println("waiting for replies..");
                     out.receive(p); System.out.println("receiving reply from servers");
                     serverIPs.add(p.getAddress());
+                    serverNames.add(new String (p.getData()));
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                     System.out.println("this");
@@ -89,25 +128,27 @@ public class Client {
             }
         }
     }
-    public class Timer extends Thread{
-        Thread g;
-        public void setThread(Thread g){
-            this.g=g;
+    public class ListenToServer extends Thread{
+        JTextArea j;
+        
+        public ListenToServer(JTextArea j){
+            super();
+            this.j = j;
         }
+        
         @Override
         public void run(){
-            int i=1;
-            while (i<=10){
-                try { System.out.println(getServerList());
-                    sleep(1000);
-                    i++;
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                } 
-            }
-            g.stop();
-            out.close();
             
+            while (true){
+                try {
+                    DatagramPacket p= new DatagramPacket(new byte[65535], 65535);
+                    in.receive(p);
+                    String s= new String(p.getData()).trim();
+                    j.setText(s);
+                } catch (IOException ex) {
+                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
     public static void main(String[] args){

@@ -33,6 +33,9 @@ public class Main extends javax.swing.JFrame {
     JFileChooser jF ;
     File file=null;
     boolean saved = true;
+    Client c=null;
+    Server s=null;
+    boolean input=false;
     public Main() {
         initComponents();
         jF = new JFileChooser();
@@ -43,11 +46,18 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (saved) saved= false;
+                if (s!=null) {
+                    System.out.println("sending text");
+                    s.sendData(text.getText());
+                }
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
                 if (saved) saved= false;
+                if (s!=null) {
+                    s.sendData(text.getText());
+                }
             }
 
             @Override
@@ -154,9 +164,19 @@ public class Main extends javax.swing.JFrame {
         jMenu3.setText("Remote");
 
         menuHost.setText("Host");
+        menuHost.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuHostActionPerformed(evt);
+            }
+        });
         jMenu3.add(menuHost);
 
         menuRemote.setText("Remote");
+        menuRemote.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuRemoteActionPerformed(evt);
+            }
+        });
         jMenu3.add(menuRemote);
 
         jMenuBar1.add(jMenu3);
@@ -251,8 +271,56 @@ public class Main extends javax.swing.JFrame {
     private void menuFileSaveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuFileSaveAsActionPerformed
         menuFileSaveActionPerformed(evt);
     }//GEN-LAST:event_menuFileSaveAsActionPerformed
+
+    private void menuHostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuHostActionPerformed
+        if (input) return;
+        if (c!= null){
+            JOptionPane.showMessageDialog(this, "Anda sedang terkoneksi ke dalam sebuah server.");
+        }
+        else if (s!=null){
+            JOptionPane.showMessageDialog(this, "Anda sudah dalam kondisi hosting");
+        }
+        else {
+            new InputHostName(this,s).setVisible(true);
+            input=true;
+        }
+    }//GEN-LAST:event_menuHostActionPerformed
+
+    private void menuRemoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRemoteActionPerformed
+        if (input) return;
+        if (c!= null){
+            JOptionPane.showMessageDialog(this, "Anda sedang terkoneksi ke dalam sebuah server.");
+        }
+        else if (s!=null){
+            JOptionPane.showMessageDialog(this, "Anda sudah dalam kondisi hosting");
+        }
+        else {
+            new ConnToServer(this, c).setVisible(true);
+            input=true;
+        }
+    }//GEN-LAST:event_menuRemoteActionPerformed
     
-    
+    public void setServer(Server s){
+        this.s= s;
+        input=false;
+        if (s!=null) {
+            this.c=null;
+            s.listenToReqs();
+            this.setTitle("Server");
+        }
+        
+    }
+    public void setClient (Client c){
+        this.c=c;
+        input =false;
+        if (c!=null) {
+            this.s=null;
+            c.connect(text);
+            this.setTitle("Client");
+            
+        }
+        
+    }
     private void updateText(){
         BufferedReader b= null;
         try {

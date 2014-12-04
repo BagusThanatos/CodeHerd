@@ -93,11 +93,17 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Host"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuHostActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="menuRemote">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Remote"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuRemoteActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>

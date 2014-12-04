@@ -5,6 +5,8 @@
  */
 package codeherd;
 
+import java.awt.event.WindowEvent;
+
 /**
  *
  * @author ASUS
@@ -14,8 +16,16 @@ public class InputHostName extends javax.swing.JFrame {
     /**
      * Creates new form InputHostName
      */
+    Server s=null;
+    Main m;
+    
     public InputHostName() {
         initComponents();
+    }
+    public InputHostName (Main m, Server s){
+        this();
+        this.m=m;
+        this.s=s;
     }
 
     /**
@@ -34,12 +44,27 @@ public class InputHostName extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Input Host Name");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         jLabel1.setText("Input hostname");
 
         buttonCancel.setText("Cancel");
+        buttonCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonCancelActionPerformed(evt);
+            }
+        });
 
         buttonHost.setText("Host");
+        buttonHost.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonHostActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -73,6 +98,21 @@ public class InputHostName extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        
+    }//GEN-LAST:event_formWindowClosed
+
+    private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
+        m.setServer(s);
+        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }//GEN-LAST:event_buttonCancelActionPerformed
+
+    private void buttonHostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonHostActionPerformed
+        if (textHostname.getText()!=null) m.setServer(new Server(textHostname.getText()));
+        else m.setServer(s);
+        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }//GEN-LAST:event_buttonHostActionPerformed
 
     /**
      * @param args the command line arguments
