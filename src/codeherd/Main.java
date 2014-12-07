@@ -39,7 +39,7 @@ public class Main extends javax.swing.JFrame {
     public Main() {
         initComponents();
         jF = new JFileChooser();
-        this.setTitle("Notepad");
+        
        
         text.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -93,6 +93,7 @@ public class Main extends javax.swing.JFrame {
         jMenu3 = new javax.swing.JMenu();
         menuHost = new javax.swing.JMenuItem();
         menuRemote = new javax.swing.JMenuItem();
+        menuDisconnect = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("CodeHerd");
@@ -177,6 +178,14 @@ public class Main extends javax.swing.JFrame {
             }
         });
         jMenu3.add(menuRemote);
+
+        menuDisconnect.setText("Disconnect/Stop Hosting");
+        menuDisconnect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuDisconnectActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuDisconnect);
 
         jMenuBar1.add(jMenu3);
 
@@ -298,14 +307,38 @@ public class Main extends javax.swing.JFrame {
             input=true;
         }
     }//GEN-LAST:event_menuRemoteActionPerformed
-    
+
+    private void menuDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuDisconnectActionPerformed
+        int val = JOptionPane.showConfirmDialog(this, "Warning!!\nJika anda mengklik YES, maka anda akan putus dari"
+                + " Server atau Stop Hosting");
+        if (val ==JOptionPane.YES_OPTION) {
+            if (s!= null){
+                s.sendData(Server.DISCONNECT);
+                s.stopListening();
+                
+            }
+            if (c!= null){
+                c.disconnect();
+                
+            }
+            s=null;
+            c=null;
+            this.setTitle("CodeHerd");
+        }
+    }//GEN-LAST:event_menuDisconnectActionPerformed
+    public void setInputFlag(boolean i){
+        this.input=i;
+    }
+    public void setText(String s){
+        this.text.setText(s);
+    }
     public void setServer(Server s){
         this.s= s;
         input=false;
         if (s!=null) {
             this.c=null;
             s.listenToReqs();
-            this.setTitle("Server: "+s.getName());
+            this.setTitle("CodeHerd Server: "+s.getName());
         }
         
     }
@@ -317,11 +350,10 @@ public class Main extends javax.swing.JFrame {
                 s.stopListening();
                 this.s=null;
             }
-            c.connect(text);
-            this.setTitle("Client");
+            c.connect(this);
+            this.setTitle("CodeHerd Client: Connected to "+c.getServerIP().toString());
             
         }
-        
     }
     private void updateText(){
         BufferedReader b= null;
@@ -393,6 +425,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JMenuItem menuDisconnect;
     private javax.swing.JMenuItem menuFileExit;
     private javax.swing.JMenuItem menuFileNew;
     private javax.swing.JMenuItem menuFileOpen;

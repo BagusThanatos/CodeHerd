@@ -57,6 +57,9 @@ public class Client {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    public InetAddress getServerIP(){
+        return this.serverIP;
+    }
     public void getServers(){
         serverIPs.clear();
         new GetServers(new Timer()).start();    
@@ -70,11 +73,11 @@ public class Client {
     public void setServerIP(InetAddress i){
         this.serverIP=i;
     }
-    public void connect(JTextArea j){
+    public void connect(Main m){
         if (serverIP != null) {
             try {
                 this.in= new Socket(serverIP, Server.serverPortData);
-                ListenToServer l = new ListenToServer(j);
+                ListenToServer l = new ListenToServer(m);
                 l.start();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -85,7 +88,7 @@ public class Client {
         if (serverIP != null) {
             try {
                 in.close();
-                if (!l.isInterrupted() && l.isAlive()) l.interrupt();
+                //if (!l.isInterrupted() && l.isAlive()) l.interrupt();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -119,7 +122,7 @@ public class Client {
                 try { System.out.println("waiting for replies..");
                     out.receive(p); System.out.println("receiving reply from servers");
                     serverIPs.add(p.getAddress());
-                    serverNames.add(new String (p.getData()));
+                    serverNames.add(new String (p.getData()).trim());
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                     System.out.println("this");
@@ -128,11 +131,11 @@ public class Client {
         }
     }
     public class ListenToServer extends Thread{
-        JTextArea j;
+        Main m;
         
-        public ListenToServer(JTextArea j){
+        public ListenToServer(Main m){
             super();
-            this.j = j;
+            this.m = m;
         }
         
         @Override
@@ -143,8 +146,13 @@ public class Client {
                 String s;
                 r = new DataInputStream((in.getInputStream()));
                 //r = new BufferedReader(new InputStreamReader(in.getInputStream())); System.out.println("buffered reader created");
-                while ((s = r.readUTF())!=null && in.isConnected()){ System.out.println(s);
-                    j.setText(s);
+                while (!in.isClosed() && (s = r.readUTF())!=null && in.isConnected()){
+                    if (s.equals(Server.DISCONNECT)) {
+                        in.close();
+                        m.setClient(null);
+                        break;
+                    }
+                    m.setText(s);
                     System.out.println("showing data from server");
                 }
                 /*
@@ -160,7 +168,7 @@ public class Client {
                         }
                 */
             } catch (IOException ex) {
-                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
                     if (r!=null) r.close();

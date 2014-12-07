@@ -101,7 +101,7 @@ public class InputHostName extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        
+        m.setInputFlag(false);
     }//GEN-LAST:event_formWindowClosed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed

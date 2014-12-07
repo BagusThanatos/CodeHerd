@@ -147,7 +147,7 @@ public class ConnToServer extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonCancelActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        
+        m.setInputFlag(false);
     }//GEN-LAST:event_formWindowClosed
 
     private void buttonRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRefreshActionPerformed

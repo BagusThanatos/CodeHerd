@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 public class Server {
     public static int serverPort= 8001;
     public static int serverPortData = 8002;
-    public static byte[] DISCONNECT="DISCONNECT".getBytes();
-    public static byte[] CONNECT="CONNECT".getBytes();
+    public static String DISCONNECT="COMMAND: DISCONNECT";
+    
  
     String sName;
     DatagramSocket socket;
@@ -62,26 +62,35 @@ public class Server {
                         System.out.println("a client added");
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    //Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
         a.start();
         lC.start();
     }
     public void stopListening(){
-        lC.interrupt();
-        socket.close();
+        try {
+            lC.interrupt();
+            socket.close();
+            s2.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     public void sendData(String s){
-        clients.stream().forEach((i) -> {
+        for (Socket i : clients) {
             try {
+                if (i.isClosed() || !i.isConnected()) {
+                    clients.remove(i);
+                    continue;
+                }
                 DataOutputStream p = new DataOutputStream(i.getOutputStream());
                 p.writeUTF(s);
                 System.out.println("sending text");
             } catch (IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
-        });
+        }
     }
     protected class ListenConnect extends Thread{
        
