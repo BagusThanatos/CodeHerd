@@ -8,7 +8,6 @@ package codeherd;
 import java.awt.event.WindowEvent;
 import static java.lang.Thread.sleep;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
