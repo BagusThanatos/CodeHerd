@@ -26,6 +26,7 @@ public class InputHostName extends javax.swing.JFrame {
         this();
         this.m=m;
         this.s=s;
+        this.toFront();
     }
 
     /**

@@ -5,13 +5,17 @@
  */
 package codeherd;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -24,11 +28,11 @@ import javax.swing.JTextArea;
  * @author BagusThanatos
  */
 public class Client {
-    public static int clientPort= 4447;
-    public static int clientPort2=4448;
+    public static int clientPort= 0; //choose a random port
+    public static int clientPort2=0; //choose a random port
     InetAddress serverIP= null;
     DatagramSocket out;
-    DatagramSocket in;
+    Socket in;
     ArrayList<InetAddress> serverIPs;
     ArrayList<String> serverNames;
     Enumeration<NetworkInterface> netInterfaces;
@@ -49,7 +53,7 @@ public class Client {
             }
             
             this.out= new DatagramSocket(clientPort);
-            this.in= new DatagramSocket(clientPort2);
+            
             out.setBroadcast(true);
             serverIPs= new ArrayList();
             serverNames= new ArrayList<>();
@@ -73,8 +77,7 @@ public class Client {
     public void connect(JTextArea j){
         if (serverIP != null) {
             try {
-                String s = "CONNECT";
-                out.send(new DatagramPacket(s.getBytes(), s.getBytes().length, serverIP, Server.serverPort));
+                this.in= new Socket(serverIP, Server.serverPortData);
                 ListenToServer l = new ListenToServer(j);
                 l.start();
             } catch (IOException ex) {
@@ -85,8 +88,7 @@ public class Client {
     public void disconnect(){
         if (serverIP != null) {
             try {
-                String s = "DISCONNECT";
-                out.send(new DatagramPacket(s.getBytes(), s.getBytes().length, serverIP, Server.serverPort));
+                in.close();
                 if (!l.isInterrupted() && l.isAlive()) l.interrupt();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,6 +97,7 @@ public class Client {
     }
     public class GetServers extends Thread{
         Timer t;
+        
         
         public GetServers(Timer t){
             super();
@@ -138,22 +141,37 @@ public class Client {
         
         @Override
         public void run(){
-            
-            while (true){
-                try {
-                    DatagramPacket p= new DatagramPacket(new byte[65535], 65535);
-                    in.receive(p);
-                    String s= new String(p.getData()).trim();
+            //BufferedReader r = null;
+            DataInputStream r = null;
+            try {
+                String s;
+                r = new DataInputStream((in.getInputStream()));
+                //r = new BufferedReader(new InputStreamReader(in.getInputStream())); System.out.println("buffered reader created");
+                while ((s = r.readUTF())!=null && in.isConnected()){ System.out.println(s);
                     j.setText(s);
+                    System.out.println("showing data from server");
+                }
+                /*
+                        while (true){
+                            try {
+                                
+                                System.out.println("Getting data from server");
+                                String a = r.readLine().trim();
+                                j.setText(a);
+                            } catch (IOException ex) {
+                                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                */
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    if (r!=null) r.close();
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
-    }
-    public static void main(String[] args){
-        Client C= new Client();
-        C.getServers();
-        
     }
 }

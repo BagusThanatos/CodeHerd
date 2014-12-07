@@ -47,7 +47,6 @@ public class Main extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent e) {
                 if (saved) saved= false;
                 if (s!=null) {
-                    System.out.println("sending text");
                     s.sendData(text.getText());
                 }
             }
@@ -306,7 +305,7 @@ public class Main extends javax.swing.JFrame {
         if (s!=null) {
             this.c=null;
             s.listenToReqs();
-            this.setTitle("Server");
+            this.setTitle("Server: "+s.getName());
         }
         
     }
@@ -314,7 +313,10 @@ public class Main extends javax.swing.JFrame {
         this.c=c;
         input =false;
         if (c!=null) {
-            this.s=null;
+            if (s!=null) {
+                s.stopListening();
+                this.s=null;
+            }
             c.connect(text);
             this.setTitle("Client");
             

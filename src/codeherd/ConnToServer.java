@@ -29,6 +29,7 @@ public class ConnToServer extends javax.swing.JFrame {
     ArrayList<InetAddress> ip;
     public ConnToServer() {
         initComponents();
+        this.toFront();
     }
     public ConnToServer(Main m,Client c){
         this();
@@ -36,6 +37,7 @@ public class ConnToServer extends javax.swing.JFrame {
         if (c!=null) this.c=c;
         else this.c = new Client();
         buttonConnect.setEnabled(false);
+        this.toFront();
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -183,6 +185,7 @@ public class ConnToServer extends javax.swing.JFrame {
         else {
             DefaultTableModel d = (DefaultTableModel) tableServerList.getModel();
             System.out.println(tableServerList.getValueAt(tableServerList.getSelectedRow(),0));
+            
             c.setServerIP(ip.get(tableServerList.getSelectedRow()));
             m.setClient(c);
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));

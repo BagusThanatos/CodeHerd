@@ -6,12 +6,14 @@
 package codeherd;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -32,17 +34,19 @@ public class Server {
  
     String sName;
     DatagramSocket socket;
-    Socket s2;
-    BufferedReader in;
-    
+    ServerSocket s2;
+    Socket s3;
+    //PrintWriter p;
+    DataOutputStream p;
     ListenClass lC;
-    private ArrayList<InetAddress> clients ;
+    private ArrayList<Socket> clients ;
     public Server () {
         try {
             socket= new DatagramSocket(8001,InetAddress.getByName("0.0.0.0"));
-            
+            s2= new ServerSocket(serverPortData);
             clients = new ArrayList<>();
             System.out.println(socket.getLocalAddress()+""+InetAddress.getLocalHost());
+            
         } catch (Exception ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -54,6 +58,18 @@ public class Server {
     }
     public void listenToReqs(){
         lC= new ListenClass();
+        Thread a = new Thread (() -> {
+                try {
+                    while (true) {
+                        if (!lC.isAlive()) break;
+                        clients.add(s2.accept());
+                        System.out.println("a client added");
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        a.start();
         lC.start();
     }
     public void stopListening(){
@@ -63,14 +79,16 @@ public class Server {
     public void sendData(String s){
         clients.stream().forEach((i) -> {
             try {
-                s2= new Socket(i, serverPortData);
-                PrintWriter p = new PrintWriter(s2.getOutputStream(),true);
-                p.println(s);
-                s2.close();
+                DataOutputStream p = new DataOutputStream(i.getOutputStream());
+                p.writeUTF(s);
+                System.out.println("sending text");
             } catch (IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+    }
+    protected class ListenConnect extends Thread{
+       
     }
     protected class ListenClass extends Thread{
         @Override
@@ -85,14 +103,8 @@ public class Server {
                     String s = new String(p.getData());
                     s=s.trim();
                     System.out.println(s);
-                    if (s.equals("CONNECT")) {
-                        clients.add(p.getAddress()); System.out.println("a client is connected");
-                    }
-                    else if (s.equals("DISCONNECT")) {
-                        clients.remove(p.getAddress());
-                    }
-                    else 
-                        socket.send(new DatagramPacket(sName.getBytes(),sName.getBytes().length,p.getAddress(), p.getPort()));
+                  
+                    socket.send(new DatagramPacket(sName.getBytes(),sName.getBytes().length,p.getAddress(), p.getPort()));
                     System.out.println("sending reply to"+p.getAddress());
                     
                 }
@@ -105,14 +117,7 @@ public class Server {
             } 
         }
     }
-    public static void main(String[] a){
-        Server s = new Server();
-        s.listenToReqs();
-        Thread t = new Thread(() -> {
-            Scanner sc = new Scanner(System.in);
-            sc.nextLine();
-            s.stopListening();
-        });
-        t.start();
+    public String getName(){
+        return this.sName;
     }
 }
