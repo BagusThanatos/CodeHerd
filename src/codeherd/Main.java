@@ -291,6 +291,7 @@ public class Main extends javax.swing.JFrame {
         else {
             new InputHostName(this,s).setVisible(true);
             input=true;
+            
         }
     }//GEN-LAST:event_menuHostActionPerformed
 
@@ -305,6 +306,7 @@ public class Main extends javax.swing.JFrame {
         else {
             new ConnToServer(this, c).setVisible(true);
             input=true;
+            
         }
     }//GEN-LAST:event_menuRemoteActionPerformed
 
@@ -324,6 +326,7 @@ public class Main extends javax.swing.JFrame {
             s=null;
             c=null;
             this.setTitle("CodeHerd");
+            text.setEditable(true);
         }
     }//GEN-LAST:event_menuDisconnectActionPerformed
     public void setInputFlag(boolean i){
@@ -339,6 +342,7 @@ public class Main extends javax.swing.JFrame {
             this.c=null;
             s.listenToReqs();
             this.setTitle("CodeHerd Server: "+s.getName());
+            text.setEditable(true);
         }
         
     }
@@ -352,7 +356,7 @@ public class Main extends javax.swing.JFrame {
             }
             c.connect(this);
             this.setTitle("CodeHerd Client: Connected to "+c.getServerIP().toString());
-            
+            text.setEditable(false);
         }
     }
     private void updateText(){
