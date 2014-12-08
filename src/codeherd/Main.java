@@ -97,6 +97,11 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("CodeHerd");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         text.setColumns(20);
         text.setRows(5);
@@ -329,6 +334,15 @@ public class Main extends javax.swing.JFrame {
             text.setEditable(true);
         }
     }//GEN-LAST:event_menuDisconnectActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        if (c!= null){
+            c.disconnect();
+        }
+        if (s!= null){
+            s.sendData(Server.DISCONNECT);
+        }
+    }//GEN-LAST:event_formWindowClosing
     public void setInputFlag(boolean i){
         this.input=i;
     }
@@ -344,6 +358,10 @@ public class Main extends javax.swing.JFrame {
             this.setTitle("CodeHerd Server: "+s.getName());
             text.setEditable(true);
         }
+        else {
+            this.setTitle("CodeHerd");
+            text.setEditable(true);
+        }
         
     }
     public void setClient (Client c){
@@ -357,6 +375,10 @@ public class Main extends javax.swing.JFrame {
             c.connect(this);
             this.setTitle("CodeHerd Client: Connected to "+c.getServerIP().toString());
             text.setEditable(false);
+        }
+        else {
+            this.setTitle("CodeHerd");
+            text.setEditable(true);
         }
     }
     private void updateText(){
