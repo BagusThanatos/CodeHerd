@@ -81,6 +81,7 @@ public class Server {
         for (Socket i : clients) {
             try {
                 if (i.isClosed() || !i.isConnected()) {
+                    if (!i.isClosed()) i.close();
                     clients.remove(i);
                     continue;
                 }
